@@ -1,0 +1,38 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<dom-module id="iris-content-import">
+  <template>
+    <iris-settings-access id="settings"></iris-settings-access>
+  </template>
+  <script>
+    Polymer({
+      is: 'iris-content-import',
+      properties: {
+        dest: {
+          type: String,
+          observer: '_destCahnged'
+        },
+        content: {
+          type: String,
+          value: '',
+          notify: true
+        }
+      },
+      attached: function() {
+        this.style.display = 'none';
+      },
+      _destCahnged(dest) {
+        let server = this.$.settings.getItem('data_server');
+        let port = this.$.settings.getItem('data_port');
+        let root = port ? (server + ':' + port) : server;
+
+        let url = root + dest;
+        fetch(url, {
+          cache: "reload"
+        }).then(r => r.text()).then(text => {
+          this.set('content', text);
+        });
+      }
+    });
+  </script>
+</dom-module>
