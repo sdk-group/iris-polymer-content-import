@@ -22,11 +22,12 @@
         this.style.display = 'none';
       },
       _destCahnged(dest) {
+        if (!dest) return;
         let server = this.$.settings.getItem('data_server');
         let port = this.$.settings.getItem('data_port');
         let root = port ? (server + ':' + port) : server;
 
-        let url = root + dest;
+        let url = 'http://' + root + dest;
         fetch(url, {
           cache: "reload"
         }).then(r => r.text()).then(text => {
