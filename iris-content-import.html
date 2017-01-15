@@ -5,36 +5,51 @@
     <iris-settings-access id="settings"></iris-settings-access>
   </template>
   <script>
-    Polymer({
-      is: 'iris-content-import',
-      properties: {
-        dest: {
-          type: String,
-          observer: '_destCahnged'
-        },
-        content: {
-          type: String,
-          value: '',
-          notify: true
-        }
-      },
-      attached: function() {
-        this.style.display = 'none';
-      },
-      _destCahnged(dest) {
-        if (!dest) return;
-        let server = this.$.settings.getItem('data_server');
-        let port = this.$.settings.getItem('data_port');
-        let root = port ? (server + ':' + port) : server;
+    (function () {
+      function FromTemplateString(template_string, params) {
+        return template_string.replace(/{([^}]+)}/g, (match) => params[match.slice(1, match.length - 1)])
+      };
 
-        let url = 'http://' + root + dest;
-        fetch(url, {
-          cache: "reload"
-        }).then(r => r.text()).then(text => {
-          this.set('content', text);
-          this.fire('import', text);
-        });
-      }
-    });
+      Polymer({
+        is: 'iris-content-import',
+        properties: {
+          dest: {
+            type: String
+          },
+          content: {
+            type: String,
+            value: '',
+            notify: true
+          },
+          params: {
+            type: Object,
+            value: {}
+          }
+        },
+        observers: ['_destCahnged(dest,params)'],
+        attached: function () {
+          this.style.display = 'none';
+        },
+        _destCahnged(dest, params) {
+          if (!dest)
+            return;
+          let server = this.$.settings.getItem('data_server');
+          let port = this.$.settings.getItem('data_port');
+          let root = port
+            ? (server + ':' + port)
+            : server;
+
+          let url = 'http://' + root + FromTemplateString(dest, params) + "?c=" + moment().format('x');
+
+          fetch(url, {cache: "reload"}).then(r => r.text()).then(text => {
+            this.set('content', text);
+            this.fire('import', text);
+          });
+        },
+        reload() {
+          this._destCahnged(this.dest, this.params);
+        }
+      });
+    })()
   </script>
 </dom-module>
